@@ -9,6 +9,10 @@ document.addEventListener("DOMContentLoaded", () => {
     const savedToggle = localStorage.getItem("showLogPreviews") === "true";
     document.getElementById("toggle-global-previews").checked = savedToggle;
 
+    // Restore stats toggle state (default to true)
+    const savedStats = localStorage.getItem("showUsageStats") !== "false";
+    document.getElementById("toggle-global-stats").checked = savedStats;
+
     lucide.createIcons();
     fetchApps();
     // Poll stats every 2 seconds
@@ -57,6 +61,19 @@ function setupEventListeners() {
         localStorage.setItem("showLogPreviews", e.target.checked);
         renderAppsGrid(appsData);
     });
+
+    // Global stats toggle handler
+    document.getElementById("toggle-global-stats").addEventListener("change", (e) => {
+        localStorage.setItem("showUsageStats", e.target.checked);
+        renderAppsGrid(appsData);
+    });
+
+    // Configuration Export/Import buttons
+    document.getElementById("btn-export-config").addEventListener("click", exportConfig);
+    document.getElementById("btn-import-config").addEventListener("click", () => {
+        document.getElementById("import-config-file").click();
+    });
+    document.getElementById("import-config-file").addEventListener("change", handleImportFile);
 }
 
 // Fetch all apps from the backend API
@@ -120,6 +137,13 @@ function renderAppsGrid(apps) {
     const grid = document.getElementById("bots-grid");
     const showPreviews = document.getElementById("toggle-global-previews").checked;
     const previewHidden = showPreviews ? "" : "hidden";
+    
+    const showStats = document.getElementById("toggle-global-stats").checked;
+    if (showStats) {
+        grid.classList.remove("hide-stats-active");
+    } else {
+        grid.classList.add("hide-stats-active");
+    }
     
     let html = "";
     apps.forEach(app => {
@@ -539,4 +563,83 @@ function getBasename(path) {
     // Handle both Windows and Unix path separators
     const parts = path.split(/[/\\]/);
     return parts[parts.length - 1] || parts[parts.length - 2] || path;
+}
+
+// Export configuration as a JSON file
+function exportConfig() {
+    if (appsData.length === 0) {
+        alert("No configurations to export.");
+        return;
+    }
+    
+    // Extract only configuration properties (omit runtime statistics)
+    const cleanConfig = appsData.map(app => ({
+        name: app.name,
+        path: app.path,
+        entrypoint: app.entrypoint || "main.py",
+        auto_start: app.auto_start || false,
+        restart_on_failure: app.restart_on_failure !== false,
+        max_restarts: app.max_restarts !== undefined ? app.max_restarts : 5,
+        env: app.env || {}
+    }));
+    
+    const blob = new Blob([JSON.stringify(cleanConfig, null, 2)], { type: "application/json" });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = "bot-dashboard-config.json";
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    URL.revokeObjectURL(url);
+}
+
+// Handle Import Config File Selected
+function handleImportFile(e) {
+    const file = e.target.files[0];
+    if (!file) return;
+    
+    const reader = new FileReader();
+    reader.onload = async (evt) => {
+        try {
+            const data = JSON.parse(evt.target.result);
+            
+            // Basic validation
+            if (!Array.isArray(data)) {
+                throw new Error("Configuration must be a JSON array of apps");
+            }
+            
+            for (const item of data) {
+                if (!item.name || !item.path) {
+                    throw new Error("Each app configuration must have a 'name' and 'path' property");
+                }
+            }
+            
+            if (!confirm(`Are you sure you want to import these ${data.length} configurations? This will overwrite your current configuration and stop any running bots.`)) {
+                e.target.value = "";
+                return;
+            }
+            
+            // POST to backend import endpoint
+            const response = await fetch("/api/config/import", {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify(data)
+            });
+            
+            if (response.ok) {
+                alert("Configuration imported successfully!");
+                fetchApps();
+            } else {
+                const resData = await response.json();
+                alert(`Import failed: ${resData.detail || "Server error"}`);
+            }
+            
+        } catch (err) {
+            alert(`Error parsing configuration file: ${err.message}`);
+        } finally {
+            e.target.value = "";
+        }
+    };
+    reader.readAsText(file);
 }

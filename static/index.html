@@ -46,16 +46,36 @@
             </div>
 
             <div class="header-actions">
-                <label class="toggle-container" style="margin-right: 1.5rem;" title="Show log previews under cards">
-                    <input type="checkbox" id="toggle-global-previews">
-                    <span class="toggle-slider"></span>
-                    Log Previews
-                </label>
                 <button id="btn-add-bot" class="btn btn-primary">
                     <i data-lucide="plus"></i> Add Script
                 </button>
             </div>
         </header>
+
+        <!-- Options & Config Bar -->
+        <div class="option-bar">
+            <div class="option-toggles">
+                <label class="toggle-container" title="Show log previews under cards">
+                    <input type="checkbox" id="toggle-global-previews">
+                    <span class="toggle-slider"></span>
+                    Enable Log Previews
+                </label>
+                <label class="toggle-container" title="Show CPU and RAM usage on cards">
+                    <input type="checkbox" id="toggle-global-stats" checked>
+                    <span class="toggle-slider"></span>
+                    Show Usage Stats
+                </label>
+            </div>
+            <div class="config-actions">
+                <input type="file" id="import-config-file" style="display: none;" accept=".json">
+                <button id="btn-export-config" class="btn btn-secondary" title="Export entire configuration as JSON">
+                    <i data-lucide="download"></i> Export Config
+                </button>
+                <button id="btn-import-config" class="btn btn-secondary" title="Import configuration from JSON file">
+                    <i data-lucide="upload"></i> Import Config
+                </button>
+            </div>
+        </div>
 
         <main class="dashboard-content">
             <!-- Loading Indicator -->

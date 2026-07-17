@@ -848,21 +848,55 @@ form {
     100% { box-shadow: 0 0 0 0 rgba(239, 68, 68, 0); }
 }
 
+/* Option Bar & Controls */
+.option-bar {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    background: var(--bg-card);
+    border: 1px solid var(--border-color);
+    backdrop-filter: var(--glass-blur);
+    padding: 0.75rem 1.25rem;
+    border-radius: 12px;
+    margin-bottom: 2rem;
+    box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.25);
+}
+
+.option-toggles {
+    display: flex;
+    gap: 2rem;
+}
+
+.config-actions {
+    display: flex;
+    gap: 0.75rem;
+}
+
+/* Toggle stats hide state */
+.hide-stats-active .bot-stats {
+    display: none !important;
+}
+
 /* Card Log Preview */
 .bot-log-preview-container {
     background: #030508;
     border: 1px solid rgba(255, 255, 255, 0.03);
     border-radius: 6px;
     padding: 0.5rem;
-    max-height: 80px;
+    height: 100px; /* Fixed height instead of max-height */
     overflow-y: auto;
     margin-top: 0.25rem;
+    scrollbar-width: none; /* Firefox */
+}
+
+.bot-log-preview-container::-webkit-scrollbar {
+    display: none; /* Safari/Chrome */
 }
 
 .bot-log-preview {
     font-family: var(--font-mono);
-    font-size: 0.7rem;
-    line-height: 1.4;
+    font-size: 0.65rem; /* Sized down font */
+    line-height: 1.35;
     color: #a1a1aa;
     white-space: pre-wrap;
     word-break: break-all;
@@ -870,6 +904,11 @@ form {
 
 .bot-log-preview .log-line {
     margin-bottom: 1px;
+}
+
+/* Make preview window bigger when stats are hidden */
+.hide-stats-active .bot-log-preview-container {
+    height: 160px;
 }
 
 /* Utility Hidden */

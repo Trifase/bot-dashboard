@@ -1,6 +1,6 @@
 import os
 from contextlib import asynccontextmanager
-from typing import Optional
+from typing import Optional, List
 from fastapi import FastAPI, HTTPException, WebSocket, WebSocketDisconnect
 from fastapi.staticfiles import StaticFiles
 from fastapi.middleware.cors import CORSMiddleware
@@ -65,6 +65,25 @@ async def add_app(app: AppCreate):
     if not success:
         raise HTTPException(status_code=400, detail="App with this name already exists or configuration is invalid")
     return {"status": "success", "message": "App added"}
+
+@app.post("/api/config/import")
+async def import_config(apps: List[AppCreate]):
+    """Import and replace the entire bot configuration."""
+    # Stop all current running processes first
+    await manager.stop_all()
+    
+    # Clear current config list
+    manager.apps = []
+    manager.save_apps()
+    
+    # Import new configurations
+    for app in apps:
+        manager.add_app(app.model_dump())
+        
+    # Start all auto-start processes
+    await manager.start_all_auto()
+    
+    return {"status": "success", "message": f"{len(apps)} configurations imported"}
 
 @app.post("/api/apps/{name}/edit")
 async def edit_app(name: str, app: AppEdit):
