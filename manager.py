@@ -308,6 +308,19 @@ class ProcessManager:
                 pass
                 
         return stats
+        
+    def get_log_preview(self, name: str, max_lines: int = 4) -> str:
+        """Retrieve the last few lines of log output for card preview."""
+        log_path = f"logs/{name}.log"
+        if not os.path.exists(log_path):
+            return ""
+        try:
+            from collections import deque
+            with open(log_path, "r", encoding="utf-8", errors="replace") as f:
+                lines = deque(f, maxlen=max_lines)
+                return "".join(lines)
+        except Exception:
+            return ""
 
     async def start_all_auto(self):
         """Start all apps flagged for auto-start."""

@@ -5,6 +5,10 @@ let pollInterval = null;
 
 // Initialize Lucide Icons on first load
 document.addEventListener("DOMContentLoaded", () => {
+    // Restore global previews toggle state
+    const savedToggle = localStorage.getItem("showLogPreviews") === "true";
+    document.getElementById("toggle-global-previews").checked = savedToggle;
+
     lucide.createIcons();
     fetchApps();
     // Poll stats every 2 seconds
@@ -47,6 +51,12 @@ function setupEventListeners() {
     document.getElementById("btn-logs-start").addEventListener("click", () => triggerAction(currentLoggingApp, "start"));
     document.getElementById("btn-logs-stop").addEventListener("click", () => triggerAction(currentLoggingApp, "stop"));
     document.getElementById("btn-logs-restart").addEventListener("click", () => triggerAction(currentLoggingApp, "restart"));
+
+    // Global log preview toggle handler
+    document.getElementById("toggle-global-previews").addEventListener("change", (e) => {
+        localStorage.setItem("showLogPreviews", e.target.checked);
+        renderAppsGrid(appsData);
+    });
 }
 
 // Fetch all apps from the backend API
@@ -108,10 +118,8 @@ function updateServerStats(apps) {
 // Render the grid of bot cards
 function renderAppsGrid(apps) {
     const grid = document.getElementById("bots-grid");
-    
-    // We want to avoid full re-render flickering, but for vanilla JS we'll build it.
-    // To preserve states slightly, we can check if DOM exists and update elements,
-    // but a simple fast innerHTML replace works if we rebuild icons.
+    const showPreviews = document.getElementById("toggle-global-previews").checked;
+    const previewHidden = showPreviews ? "" : "hidden";
     
     let html = "";
     apps.forEach(app => {
@@ -163,6 +171,10 @@ function renderAppsGrid(apps) {
                             <div class="progress-bar" style="width: ${Math.min(((app.memory || 0) / 512) * 100, 100)}%"></div>
                         </div>
                     </div>
+                </div>
+                
+                <div class="bot-log-preview-container ${previewHidden}">
+                    <pre class="bot-log-preview">${app.log_preview ? app.log_preview.split('\n').filter(l => l !== '').map(l => formatLogLine(l)).join('\n') : 'No logs yet.'}</pre>
                 </div>
                 
                 <div class="bot-actions">

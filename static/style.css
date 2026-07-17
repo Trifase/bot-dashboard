@@ -848,6 +848,30 @@ form {
     100% { box-shadow: 0 0 0 0 rgba(239, 68, 68, 0); }
 }
 
+/* Card Log Preview */
+.bot-log-preview-container {
+    background: #030508;
+    border: 1px solid rgba(255, 255, 255, 0.03);
+    border-radius: 6px;
+    padding: 0.5rem;
+    max-height: 80px;
+    overflow-y: auto;
+    margin-top: 0.25rem;
+}
+
+.bot-log-preview {
+    font-family: var(--font-mono);
+    font-size: 0.7rem;
+    line-height: 1.4;
+    color: #a1a1aa;
+    white-space: pre-wrap;
+    word-break: break-all;
+}
+
+.bot-log-preview .log-line {
+    margin-bottom: 1px;
+}
+
 /* Utility Hidden */
 .hidden {
     display: none !important;

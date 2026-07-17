@@ -52,6 +52,7 @@ async def list_apps():
     result = []
     for app in manager.apps:
         stats = manager.get_app_stats(app["name"])
+        stats["log_preview"] = manager.get_log_preview(app["name"])
         # Merge configuration details with runtime stats
         merged = {**app, **stats}
         result.append(merged)
