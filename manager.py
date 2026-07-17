@@ -161,6 +161,7 @@ class ProcessManager:
 
         # Prepare environment
         env = os.environ.copy()
+        env.pop("VIRTUAL_ENV", None)  # Avoid warning when spawning uv subprocess from inside virtualenv
         env["PYTHONUNBUFFERED"] = "1"
         if app.get("env"):
             env.update(app["env"])
