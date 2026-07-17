@@ -1,0 +1,6 @@
+[project]
+name = "mock-bots"
+version = "0.1.0"
+description = "Mock bots for testing process supervisor"
+requires-python = ">=3.10"
+dependencies = []

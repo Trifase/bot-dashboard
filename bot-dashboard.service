@@ -1,0 +1,18 @@
+[Unit]
+Description=Telegram Bots Supervisor Dashboard
+After=network.target
+
+[Service]
+Type=simple
+# Update this to the absolute path of the dashboard project directory on your server
+WorkingDirectory=/home/user/bot-dashboard
+# Update this to the absolute path of your uv executable (e.g. /home/user/.local/bin/uv)
+ExecStart=/home/user/.local/bin/uv run python app.py
+Restart=always
+RestartSec=5
+Environment=PORT=8000
+Environment=HOST=0.0.0.0
+
+[Install]
+# Use default.target for user services or multi-user.target for system services
+WantedBy=default.target

@@ -1,0 +1,19 @@
+# Python virtual environments
+.venv/
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+
+# Supervisor runtime logs
+logs/
+*.log
+
+# Application configuration (contains sensitive tokens and local server paths)
+apps.yaml
+
+# Editor / System configs
+.vscode/
+.idea/
+.DS_Store
+Thumbs.db

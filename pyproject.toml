@@ -1,0 +1,15 @@
+[project]
+name = "bot-dashboard"
+version = "0.1.0"
+description = "A process supervisor and web dashboard for Python scripts running under uv"
+readme = "README.md"
+requires-python = ">=3.10"
+dependencies = [
+    "fastapi>=0.100.0",
+    "uvicorn[standard]>=0.22.0",
+    "pyyaml>=6.0",
+    "psutil>=5.9.0",
+]
+
+[tool.uv]
+package = false

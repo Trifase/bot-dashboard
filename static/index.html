@@ -1,0 +1,186 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Server Bot Supervisor</title>
+    <meta name="description" content="A premium, lightweight control panel to monitor, manage, and supervise Python and uv scripts on your server.">
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+    <!-- Lucide Icons -->
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <div class="app-container">
+        <!-- Background decorative glows -->
+        <div class="bg-glow bg-glow-1"></div>
+        <div class="bg-glow bg-glow-2"></div>
+
+        <header class="app-header">
+            <div class="brand">
+                <div class="logo-icon">
+                    <i data-lucide="cpu"></i>
+                </div>
+                <div class="brand-text">
+                    <h1>Bot Supervisor</h1>
+                    <p class="subtitle">Home Server Process Control</p>
+                </div>
+            </div>
+            
+            <div class="server-stats">
+                <div class="stat-box" id="stat-active-bots">
+                    <span class="stat-label">Active Bots</span>
+                    <span class="stat-value">0<span class="stat-total">/0</span></span>
+                </div>
+                <div class="stat-box" id="stat-total-cpu">
+                    <span class="stat-label">Total CPU</span>
+                    <span class="stat-value">0%</span>
+                </div>
+                <div class="stat-box" id="stat-total-mem">
+                    <span class="stat-label">Total RAM</span>
+                    <span class="stat-value">0 MB</span>
+                </div>
+            </div>
+
+            <div class="header-actions">
+                <button id="btn-add-bot" class="btn btn-primary">
+                    <i data-lucide="plus"></i> Add Script
+                </button>
+            </div>
+        </header>
+
+        <main class="dashboard-content">
+            <!-- Loading Indicator -->
+            <div id="loading-spinner" class="loading-state">
+                <div class="spinner"></div>
+                <p>Connecting to supervisor...</p>
+            </div>
+
+            <!-- Empty State -->
+            <div id="empty-state" class="empty-state hidden">
+                <i data-lucide="terminal" class="empty-icon"></i>
+                <h3>No scripts configured</h3>
+                <p>Add your first Python script or Telegram bot to start monitoring.</p>
+                <button id="btn-empty-add-bot" class="btn btn-primary">
+                    <i data-lucide="plus"></i> Add Script
+                </button>
+            </div>
+
+            <!-- Bots Grid -->
+            <div id="bots-grid" class="bots-grid">
+                <!-- Bot cards will be injected dynamically -->
+            </div>
+        </main>
+    </div>
+
+    <!-- Modal: Add / Edit Bot -->
+    <div id="bot-modal" class="modal-overlay hidden">
+        <div class="modal-card">
+            <div class="modal-header">
+                <h2 id="modal-title">Add Script Config</h2>
+                <button class="btn-close-modal" id="btn-close-bot-modal">
+                    <i data-lucide="x"></i>
+                </button>
+            </div>
+            <form id="bot-form">
+                <input type="hidden" id="form-action" value="add">
+                
+                <div class="form-group">
+                    <label for="bot-name">Bot Name *</label>
+                    <input type="text" id="bot-name" placeholder="e.g. WelcomeBot" required>
+                    <small>Must be a unique name, no spaces</small>
+                </div>
+                
+                <div class="form-group">
+                    <label for="bot-path">Project Directory Path *</label>
+                    <input type="text" id="bot-path" placeholder="e.g. /home/user/bots/welcome-bot" required>
+                    <small>Absolute path containing the pyproject.toml or python script</small>
+                </div>
+                
+                <div class="form-group">
+                    <label for="bot-entrypoint">Entrypoint Script *</label>
+                    <input type="text" id="bot-entrypoint" placeholder="e.g. bot.py or main.py" required>
+                    <small>Python script to run relative to the project directory</small>
+                </div>
+
+                <div class="form-row">
+                    <div class="form-group checkbox-group">
+                        <label class="checkbox-container">
+                            <input type="checkbox" id="bot-auto-start" checked>
+                            <span class="checkmark"></span>
+                            Auto-start on boot
+                        </label>
+                    </div>
+                    <div class="form-group checkbox-group">
+                        <label class="checkbox-container">
+                            <input type="checkbox" id="bot-restart-failure" checked>
+                            <span class="checkmark"></span>
+                            Restart on failure
+                        </label>
+                    </div>
+                </div>
+
+                <div class="form-group" id="max-restarts-group">
+                    <label for="bot-max-restarts">Max Restarts on Crash</label>
+                    <input type="number" id="bot-max-restarts" value="5" min="1" max="100">
+                </div>
+
+                <div class="form-group">
+                    <label for="bot-env">Environment Variables (JSON format)</label>
+                    <textarea id="bot-env" rows="3" placeholder='e.g. { "TELEGRAM_TOKEN": "12345", "DB_URL": "..." }'></textarea>
+                </div>
+
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" id="btn-cancel-bot-modal">Cancel</button>
+                    <button type="submit" class="btn btn-primary" id="btn-submit-bot">Save Config</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Modal: Log Viewer -->
+    <div id="logs-modal" class="modal-overlay hidden">
+        <div class="modal-card modal-large">
+            <div class="modal-header">
+                <div class="log-title-area">
+                    <h2 id="log-modal-title">Logs: WelcomeBot</h2>
+                    <span class="log-status-badge" id="log-modal-status">RUNNING</span>
+                </div>
+                <div class="log-controls">
+                    <div class="search-box">
+                        <i data-lucide="search"></i>
+                        <input type="text" id="log-search" placeholder="Filter logs...">
+                    </div>
+                    <label class="toggle-container">
+                        <input type="checkbox" id="log-autoscroll" checked>
+                        <span class="toggle-slider"></span>
+                        Auto-scroll
+                    </label>
+                    <button id="btn-clear-screen" class="btn btn-icon btn-secondary" title="Clear Screen">
+                        <i data-lucide="trash-2"></i>
+                    </button>
+                    <button class="btn-close-modal" id="btn-close-logs-modal">
+                        <i data-lucide="x"></i>
+                    </button>
+                </div>
+            </div>
+            <div class="modal-body console-body">
+                <pre class="console-output" id="console-output"></pre>
+            </div>
+            <div class="modal-footer console-footer">
+                <p class="console-help">Streaming live logs via WebSocket...</p>
+                <div class="console-actions">
+                    <button id="btn-logs-start" class="btn btn-success btn-small"><i data-lucide="play"></i> Start Bot</button>
+                    <button id="btn-logs-stop" class="btn btn-danger btn-small"><i data-lucide="square"></i> Stop Bot</button>
+                    <button id="btn-logs-restart" class="btn btn-warning btn-small"><i data-lucide="refresh-cw"></i> Restart Bot</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="app.js"></script>
+</body>
+</html>
