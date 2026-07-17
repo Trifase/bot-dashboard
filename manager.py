@@ -128,7 +128,24 @@ class ProcessManager:
             self.statuses[name] = "stopped"
             return
 
-        uv_path = shutil.which("uv") or "uv"
+        uv_path = shutil.which("uv")
+        if not uv_path:
+            home = os.path.expanduser("~")
+            candidates = [
+                os.path.join(home, ".local", "bin", "uv"),
+                os.path.join(home, ".cargo", "bin", "uv"),
+                os.path.join(home, ".astral", "bin", "uv"),
+            ]
+            if sys.platform == "win32":
+                candidates.extend([
+                    os.path.join(home, "AppData", "Local", "Programs", "uv", "uv.exe"),
+                ])
+            for candidate in candidates:
+                if os.path.exists(candidate):
+                    uv_path = candidate
+                    break
+            else:
+                uv_path = "uv"
         path = app["path"]
         entrypoint = app["entrypoint"]
         
